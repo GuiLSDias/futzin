@@ -1,10 +1,3 @@
-/**
- * Tipos gerados a partir do schema do banco de dados.
- *
- * Para regenerar automaticamente após mudanças no banco, execute:
- *   npx supabase gen types typescript --project-id rwfjpsmytagukzdtojcx > types/database.ts
- */
-
 export type Json =
   | string
   | number
@@ -14,137 +7,284 @@ export type Json =
   | Json[];
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5";
+  };
   public: {
     Tables: {
-      users: {
+      group_members: {
         Row: {
+          group_id: string;
           id: string;
-          name: string;
-          email: string;
-          avatar_url: string | null;
-          position: string | null;
-          created_at: string;
-          senha: string;
+          joined_at: string;
+          role: string;
+          user_id: string;
         };
         Insert: {
+          group_id: string;
           id?: string;
-          name: string;
-          email: string;
-          avatar_url?: string | null;
-          position?: string | null;
-          created_at?: string;
-          senha: string;
+          joined_at?: string;
+          role?: string;
+          user_id: string;
         };
         Update: {
+          group_id?: string;
           id?: string;
-          name?: string;
-          email?: string;
-          avatar_url?: string | null;
-          position?: string | null;
-          created_at?: string;
-          senha?: string;
+          joined_at?: string;
+          role?: string;
+          user_id?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_members_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       groups: {
         Row: {
+          created_at: string;
+          created_by: string;
+          description: string | null;
           id: string;
           name: string;
-          description: string | null;
-          created_by: string;
-          created_at: string;
         };
         Insert: {
+          created_at?: string;
+          created_by: string;
+          description?: string | null;
           id?: string;
           name: string;
-          description?: string | null;
-          created_by: string;
-          created_at?: string;
         };
         Update: {
+          created_at?: string;
+          created_by?: string;
+          description?: string | null;
           id?: string;
           name?: string;
-          description?: string | null;
-          created_by?: string;
-          created_at?: string;
         };
-      };
-      group_members: {
-        Row: {
-          id: string;
-          group_id: string;
-          user_id: string;
-          role: "admin" | "member";
-          joined_at: string;
-        };
-        Insert: {
-          id?: string;
-          group_id: string;
-          user_id: string;
-          role?: "admin" | "member";
-          joined_at?: string;
-        };
-        Update: {
-          id?: string;
-          group_id?: string;
-          user_id?: string;
-          role?: "admin" | "member";
-          joined_at?: string;
-        };
-      };
-      matches: {
-        Row: {
-          id: string;
-          group_id: string;
-          date: string;
-          time: string;
-          location: string;
-          players_per_team: number;
-          status: "agendada" | "em_andamento" | "finalizada" | "cancelada";
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          group_id: string;
-          date: string;
-          time: string;
-          location: string;
-          players_per_team?: number;
-          status?: "agendada" | "em_andamento" | "finalizada" | "cancelada";
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          group_id?: string;
-          date?: string;
-          time?: string;
-          location?: string;
-          players_per_team?: number;
-          status?: "agendada" | "em_andamento" | "finalizada" | "cancelada";
-          created_at?: string;
-        };
+        Relationships: [
+          {
+            foreignKeyName: "groups_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       match_confirmations: {
         Row: {
           id: string;
           match_id: string;
-          user_id: string;
-          status: "confirmado" | "recusado" | "talvez";
           responded_at: string;
+          status: string;
+          user_id: string;
         };
         Insert: {
           id?: string;
           match_id: string;
-          user_id: string;
-          status: "confirmado" | "recusado" | "talvez";
           responded_at?: string;
+          status: string;
+          user_id: string;
         };
         Update: {
           id?: string;
           match_id?: string;
-          user_id?: string;
-          status?: "confirmado" | "recusado" | "talvez";
           responded_at?: string;
+          status?: string;
+          user_id?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "match_confirmations_match_id_fkey";
+            columns: ["match_id"];
+            isOneToOne: false;
+            referencedRelation: "matches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "match_confirmations_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      match_goals: {
+        Row: {
+          id: string;
+          match_id: string;
+          scored_at: string;
+          team_id: string;
+          user_id: string;
+        };
+        Insert: {
+          id?: string;
+          match_id: string;
+          scored_at?: string;
+          team_id: string;
+          user_id: string;
+        };
+        Update: {
+          id?: string;
+          match_id?: string;
+          scored_at?: string;
+          team_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "match_goals_match_id_fkey";
+            columns: ["match_id"];
+            isOneToOne: false;
+            referencedRelation: "matches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "match_goals_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "match_goals_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      match_payments: {
+        Row: {
+          amount: number;
+          id: string;
+          match_id: string;
+          paid: boolean;
+          paid_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          amount: number;
+          id?: string;
+          match_id: string;
+          paid?: boolean;
+          paid_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          amount?: number;
+          id?: string;
+          match_id?: string;
+          paid?: boolean;
+          paid_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "match_payments_match_id_fkey";
+            columns: ["match_id"];
+            isOneToOne: false;
+            referencedRelation: "matches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "match_payments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      matches: {
+        Row: {
+          created_at: string;
+          date: string;
+          group_id: string;
+          id: string;
+          location: string;
+          players_per_team: number;
+          status: string;
+          time: string;
+        };
+        Insert: {
+          created_at?: string;
+          date: string;
+          group_id: string;
+          id?: string;
+          location: string;
+          players_per_team?: number;
+          status?: string;
+          time: string;
+        };
+        Update: {
+          created_at?: string;
+          date?: string;
+          group_id?: string;
+          id?: string;
+          location?: string;
+          players_per_team?: number;
+          status?: string;
+          time?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "matches_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      team_players: {
+        Row: {
+          id: string;
+          team_id: string;
+          user_id: string;
+        };
+        Insert: {
+          id?: string;
+          team_id: string;
+          user_id: string;
+        };
+        Update: {
+          id?: string;
+          team_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "team_players_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "team_players_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       teams: {
         Row: {
@@ -165,72 +305,45 @@ export type Database = {
           name?: string;
           score?: number;
         };
+        Relationships: [
+          {
+            foreignKeyName: "teams_match_id_fkey";
+            columns: ["match_id"];
+            isOneToOne: false;
+            referencedRelation: "matches";
+            referencedColumns: ["id"];
+          },
+        ];
       };
-      team_players: {
+      users: {
         Row: {
+          avatar_url: string | null;
+          created_at: string;
+          email: string;
           id: string;
-          team_id: string;
-          user_id: string;
+          name: string;
+          position: string | null;
+          senha: string | null;
         };
         Insert: {
-          id?: string;
-          team_id: string;
-          user_id: string;
-        };
-        Update: {
-          id?: string;
-          team_id?: string;
-          user_id?: string;
-        };
-      };
-      match_goals: {
-        Row: {
+          avatar_url?: string | null;
+          created_at?: string;
+          email: string;
           id: string;
-          match_id: string;
-          team_id: string;
-          user_id: string;
-          scored_at: string;
-        };
-        Insert: {
-          id?: string;
-          match_id: string;
-          team_id: string;
-          user_id: string;
-          scored_at?: string;
+          name: string;
+          position?: string | null;
+          senha?: string | null;
         };
         Update: {
+          avatar_url?: string | null;
+          created_at?: string;
+          email?: string;
           id?: string;
-          match_id?: string;
-          team_id?: string;
-          user_id?: string;
-          scored_at?: string;
+          name?: string;
+          position?: string | null;
+          senha?: string | null;
         };
-      };
-      match_payments: {
-        Row: {
-          id: string;
-          match_id: string;
-          user_id: string;
-          amount: number;
-          paid: boolean;
-          paid_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          match_id: string;
-          user_id: string;
-          amount: number;
-          paid?: boolean;
-          paid_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          match_id?: string;
-          user_id?: string;
-          amount?: number;
-          paid?: boolean;
-          paid_at?: string | null;
-        };
+        Relationships: [];
       };
     };
     Views: {
@@ -242,27 +355,134 @@ export type Database = {
     Enums: {
       [_ in never]: never;
     };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
 };
 
-// ─── Tipos auxiliares para uso nos componentes ───────────────────────────────
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
 
-export type Tables<T extends keyof Database["public"]["Tables"]> =
-  Database["public"]["Tables"][T]["Row"];
+type DefaultSchema = DatabaseWithoutInternals[Extract<
+  keyof Database,
+  "public"
+>];
 
-export type InsertTables<T extends keyof Database["public"]["Tables"]> =
-  Database["public"]["Tables"][T]["Insert"];
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R;
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R;
+      }
+      ? R
+      : never
+    : never;
 
-export type UpdateTables<T extends keyof Database["public"]["Tables"]> =
-  Database["public"]["Tables"][T]["Update"];
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I;
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I;
+      }
+      ? I
+      : never
+    : never;
 
-// Tipos nomeados para facilitar o uso
-export type User = Tables<"users">;
-export type Group = Tables<"groups">;
-export type GroupMember = Tables<"group_members">;
-export type Match = Tables<"matches">;
-export type MatchConfirmation = Tables<"match_confirmations">;
-export type Team = Tables<"teams">;
-export type TeamPlayer = Tables<"team_players">;
-export type MatchGoal = Tables<"match_goals">;
-export type MatchPayment = Tables<"match_payments">;
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U;
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U;
+      }
+      ? U
+      : never
+    : never;
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never;
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never;
+
+export const Constants = {
+  public: {
+    Enums: {},
+  },
+} as const;

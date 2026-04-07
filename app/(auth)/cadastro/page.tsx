@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase";
 import { POSICOES, type Posicao } from "@/lib/utils";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export default function CadastroPage() {
   const [nome, setNome] = useState("");
@@ -50,10 +51,16 @@ export default function CadastroPage() {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
-        await supabase
+        const { error } = await (supabase as unknown as SupabaseClient)
           .from("users")
           .update({ position: posicao })
           .eq("id", user.id);
+
+        if (error) {
+          setErro("Erro ao salvar posição");
+          setLoading(false);
+          return;
+        }
       }
     }
 
