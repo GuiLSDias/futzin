@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
+import { createClient, createRawClient } from "@/lib/supabase";
 import { POSICOES, type Posicao } from "@/lib/utils";
-import type { SupabaseClient } from "@supabase/supabase-js";
 
 export default function CadastroPage() {
+  const router = useRouter();
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [posicao, setPosicao] = useState<Posicao | "">("");
   const [erro, setErro] = useState("");
-  const [sucesso, setSucesso] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleCadastro(e: React.FormEvent) {
@@ -28,7 +28,7 @@ export default function CadastroPage() {
 
     const supabase = createClient();
 
-    const { error } = await supabase.auth.signUp({
+    const { error, data } = await supabase.auth.signUp({
       email,
       password: senha,
       options: {
@@ -46,41 +46,24 @@ export default function CadastroPage() {
       return;
     }
 
-    if (posicao) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        const { error } = await (supabase as unknown as SupabaseClient)
-          .from("users")
-          .update({ position: posicao })
-          .eq("id", user.id);
+    // Como o trigger do Supabase cria a linha na tabala `users` de forma automatizada, 
+    // nós podemos apenas atualizar o valor de posição com o ID do usuário criado.
+    if (posicao && data.user) {
+      const rawSupabase = createRawClient();
+      const { error: posError } = await rawSupabase
+        .from("users")
+        .update({ position: posicao })
+        .eq("id", data.user.id);
 
-        if (error) {
-          setErro("Erro ao salvar posição");
-          setLoading(false);
-          return;
-        }
+      if (posError) {
+        setErro("Erro ao salvar a posição preferida.");
+        setLoading(false);
+        return;
       }
     }
 
-    setSucesso(true);
-    setLoading(false);
-  }
-
-  if (sucesso) {
-    return (
-      <div className="card p-8 text-center">
-        <div className="mb-4 text-5xl">✅</div>
-        <h2 className="text-xl font-semibold text-gray-900">Conta criada!</h2>
-        <p className="mt-2 text-sm text-gray-500">
-          Verifique seu email para confirmar o cadastro e depois faça login.
-        </p>
-        <Link href="/login" className="btn-primary mt-6 w-full">
-          Ir para o login
-        </Link>
-      </div>
-    );
+    router.push("/dashboard");
+    router.refresh();
   }
 
   return (

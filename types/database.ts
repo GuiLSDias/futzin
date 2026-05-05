@@ -7,11 +7,6 @@ export type Json =
   | Json[];
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5";
-  };
   public: {
     Tables: {
       group_members: {
@@ -323,7 +318,6 @@ export type Database = {
           id: string;
           name: string;
           position: string | null;
-          senha: string | null;
         };
         Insert: {
           avatar_url?: string | null;
@@ -332,7 +326,6 @@ export type Database = {
           id: string;
           name: string;
           position?: string | null;
-          senha?: string | null;
         };
         Update: {
           avatar_url?: string | null;
@@ -341,7 +334,6 @@ export type Database = {
           id?: string;
           name?: string;
           position?: string | null;
-          senha?: string | null;
         };
         Relationships: [];
       };
@@ -361,7 +353,7 @@ export type Database = {
   };
 };
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+type DatabaseWithoutInternals = Database;
 
 type DefaultSchema = DatabaseWithoutInternals[Extract<
   keyof Database,

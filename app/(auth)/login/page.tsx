@@ -1,39 +1,36 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase";
+import { Suspense, useState } from 'react'
+import Link from 'next/link'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase'
 
-export default function LoginPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") ?? "/dashboard";
+function LoginForm() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const redirectTo = searchParams.get('redirect') ?? '/dashboard'
 
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [erro, setErro] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('')
+  const [senha, setSenha] = useState('')
+  const [erro, setErro] = useState('')
+  const [loading, setLoading] = useState(false)
 
   async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setErro("");
-    setLoading(true);
+    e.preventDefault()
+    setErro('')
+    setLoading(true)
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password: senha,
-    });
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithPassword({ email, password: senha })
 
     if (error) {
-      setErro("Email ou senha incorretos. Tente novamente.");
-      setLoading(false);
-      return;
+      setErro('Email ou senha incorretos. Tente novamente.')
+      setLoading(false)
+      return
     }
 
-    router.push(redirect);
-    router.refresh();
+    router.push(redirectTo)
+    router.refresh()
   }
 
   return (
@@ -43,7 +40,7 @@ export default function LoginPage() {
         <p className="mt-1 text-sm text-gray-500">Bem-vindo de volta!</p>
       </div>
 
-      {searchParams.get("error") === "auth" && (
+      {searchParams.get('error') === 'auth' && (
         <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
           Ocorreu um erro na autenticação. Tente novamente.
         </div>
@@ -80,22 +77,33 @@ export default function LoginPage() {
           />
         </div>
 
-        {erro && <p className="text-sm text-red-600">{erro}</p>}
+        {erro && (
+          <p className="text-sm text-red-600">{erro}</p>
+        )}
 
-        <button type="submit" disabled={loading} className="btn-primary w-full">
-          {loading ? "Entrando..." : "Entrar"}
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary w-full"
+        >
+          {loading ? 'Entrando...' : 'Entrar'}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-gray-500">
-        Não tem conta?{" "}
-        <Link
-          href="/cadastro"
-          className="font-medium text-brand-600 hover:text-brand-700"
-        >
+        Não tem conta?{' '}
+        <Link href="/cadastro" className="font-medium text-brand-600 hover:text-brand-700">
           Cadastre-se
         </Link>
       </p>
     </div>
-  );
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="card p-8 text-center text-sm text-gray-500">Carregando...</div>}>
+      <LoginForm />
+    </Suspense>
+  )
 }

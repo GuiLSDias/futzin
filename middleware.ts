@@ -1,6 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 /**
  * Rotas públicas — acessíveis sem login
@@ -20,26 +19,23 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(
-          cookiesToSet: Array<{
-            name: string;
-            value: string;
-            options?: Partial<ResponseCookie>;
-          }>,
-        ) {
+        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
+          // Passo 1: escreve nos cookies do request (para que getAll() veja a sessão nesta mesma requisição)
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           );
+          // Passo 2: recria a resposta com o request já atualizado
           supabaseResponse = NextResponse.next({ request });
+          // Passo 3: escreve os cookies na resposta para o browser persistir a sessão
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
+            supabaseResponse.cookies.set(name, value, options as any),
           );
         },
       },
     },
   );
 
-  // Renova a sessão automaticamente — não remova esta chamada
+  // IMPORTANTE: não remova esta chamada — renova o token e popula os cookies acima
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -47,34 +43,25 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isPublic = ROTAS_PUBLICAS.some((rota) => pathname.startsWith(rota));
 
-  // Usuário não autenticado tentando acessar rota protegida → redireciona para login
+  // Usuário não autenticado tentando acessar rota protegida → redireciona para /login
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    // Guarda a URL original para redirecionar após o login
     url.searchParams.set("redirect", pathname);
     return NextResponse.redirect(url);
   }
 
-  // Usuário autenticado tentando acessar login/cadastro → redireciona para dashboard
+  // Usuário autenticado tentando acessar /login ou /cadastro → redireciona para /dashboard
   if (user && isPublic && pathname !== "/auth/callback") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
+  // IMPORTANTE: retorne sempre supabaseResponse (com os cookies de sessão)
   return supabaseResponse;
 }
 
 export const config = {
   matcher: [
-    /*
-     * Aplica o middleware em todas as rotas exceto:
-     * - _next/static (arquivos estáticos)
-     * - _next/image (otimização de imagens)
-     * - favicon.ico
-     * - arquivos públicos (imagens, ícones, etc)
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
